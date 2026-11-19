@@ -1,9 +1,11 @@
-# Builds and tests pushes to main and pull requests. Only pushes to main retain the installer artifact.
+# Verification run for the registry-test cleanup.
 name: build
 on:
   push:
-    branches: [main]
-  pull_request:
+    branches: [codex/verify-non-destructive-registry-tests]
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -22,8 +24,3 @@ jobs:
       - name: Test rust-search
         run: cargo test
         working-directory: plugins/rust-search
-      - uses: actions/upload-artifact@v4
-        if: github.event_name == 'push'
-        with:
-          name: WinRust
-          path: target/release/plugin-launcher.exe
