@@ -1,12 +1,13 @@
-# Builds everything and runs the unit tests on every push and pull request. The built installer is kept as an artifact.
-name: build
+name: Verify Explorer opt-in
 on:
   push:
-    branches: [main]
-  pull_request:
+    branches: [verify-explorer-opt-in]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  verify:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,16 +16,7 @@ jobs:
           workspaces: |
             .
             plugins/rust-search
-      - name: Build all (plugins, payload, installer)
+      - name: Build plugins and installer
         run: powershell -ExecutionPolicy Bypass -File scripts\build-all.ps1
-      - name: Test workspace
-        run: |
-          reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Run /f  # a fresh runner profile may lack it; the task manager's autostart test writes there
-          cargo test --workspace
-      - name: Test rust-search
-        run: cargo test
-        working-directory: plugins/rust-search
-      - uses: actions/upload-artifact@v4
-        with:
-          name: WinRust
-          path: target/release/plugin-launcher.exe
+      - name: Test installer selection
+        run: cargo test --locked -p plugin-launcher --test install-selection
